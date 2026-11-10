@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ledgerguard
+      POSTGRES_USER: ledgerguard
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-local-only-change-me}
+    ports: ["5433:5432"]
+    volumes: [ledgerguard_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U ledgerguard -d ledgerguard"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  app:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ledgerguard
+      SPRING_DATASOURCE_USERNAME: ledgerguard
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-local-only-change-me}
+      JWT_SECRET: ${JWT_SECRET:-local-development-only-change-this-secret-32-bytes-minimum}
+      DEMO_USERNAME: ${DEMO_USERNAME:-demo}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-demo-change-me}
+      DEMO_TENANT: ${DEMO_TENANT:-tenant-demo}
+    ports: ["8085:8080"]
+    healthcheck:
+      test: ["CMD-SHELL","wget -qO- http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+volumes:
+  ledgerguard_data:

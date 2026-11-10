@@ -1,0 +1,33 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: ledgerguard
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ledgerguard}
+    username: ${SPRING_DATASOURCE_USERNAME:ledgerguard}
+    password: ${SPRING_DATASOURCE_PASSWORD:ledgerguard}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+app:
+  jwt:
+    secret: ${JWT_SECRET:local-development-only-change-this-secret-32-bytes-minimum}
+    expiry-seconds: 3600
+  demo:
+    username: ${DEMO_USERNAME:demo}
+    password: ${DEMO_PASSWORD:demo-change-me}
+    tenant: ${DEMO_TENANT:tenant-demo}
+  reconciliation:
+    delay-ms: ${RECONCILIATION_DELAY_MS:60000}
+logging:
+  level:
+    org.springframework.security: TRACE
